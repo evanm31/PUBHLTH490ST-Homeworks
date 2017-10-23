@@ -1,0 +1,78 @@
+---
+title: 'Biweekly Challenge #2 - Melanoma Survival'
+subtitle: 'Due Friday, October 20th at 7PM'
+output: pdf_document
+urlcolor: blue
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = F, warning = F)
+```
+*Please show all code and output, but no warnings or messages. Submit the assignment as a PDF file into your Google Drive folder.*
+
+The goal of this challenge is to learn about the `dplyr` package and practice logistic regression using a dataset involving melanoma patients and their survival status. `dplyr` is a package part of the tidyverse (which also includes `ggplot2`, `tidyr`, and more) used for data wrangling - the process of transforming raw, unstructured data into a more usable form for modeling or analysis. We would suggest looking through [this guide](http://genomicsclass.github.io/book/pages/dplyr_tutorial.html) on using `dplyr` before starting the assignment, as well as referencing it while completing it. [This document](https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf) is a more compact representation of `dplyr`’s functions and may be useful to print as a reference.
+
+The package `MASS` contains the dataset we will be using, so install it before starting the assignment if you have not yet done so for the course.
+
+```{r}
+#install.packages(“MASS”)
+library(MASS)
+library(dplyr)
+```
+
+First, let's load in the data and look at the first 5 observations. Type `help(Melanoma)` into your RStudio console to get information about the variables themselves.  
+
+```{r}
+head(Melanoma)
+```
+
+We can also view each of the variables in the dataset, along with their types and the first few observations of each. 
+
+```{r}
+glimpse(Melanoma)  #similar to str() in base R
+```
+
+**Exercise 1.** Notice that the variables `sex` and `ulcer` are both categorical, yet are coded in the dataset as integers. Using `dplyr`, change them both to factors, with the labels of sex being "Female" for 0 and "Male" for 1. (hint: the `factor` function from base R will be useful here, as well as `mutate` from `dplyr`. To view more information about a function in RStudio, type `?functionName`.) *5 pts* 
+
+```{r, include = F}
+Melanoma <- Melanoma %>% mutate(sex = factor(sex, labels = c("Female","Male")), ulcer = factor(ulcer))
+```
+
+\pagebreak
+
+**Exercise 2.** Create a new categorical response variable called `died` that indicates whether the given patient died from melanoma or not, which corresponds to having a 1 in the `status` column. This is called an indicator variable, so if the value of `died` is 1, it indicates that `died` is true. 0 means the person did not die. (Hint: the `mutate` and `ifelse` functions will come in handy here. Be sure to use a [logical operator](http://www.statmethods.net/management/operators.html) in the `ifelse` function.) *5 pts*
+
+```{r, include = F}
+Melanoma <- Melanoma %>% mutate(died = ifelse(status == 1, 1, 0)) 
+```
+
+Now we will introduce another very important part of using the `dplyr` package, the pipe function. The pipe operator (`%>%`, or shift+ctrl+m) can be used to simplify commands which require multiple function calls in succession. It does so by taking the output of one function and passing it as input to the next one (read it like saying "then" in between function calls.). As an example, consider the following command, which calls `summary` on the data for only women: 
+```{r}
+summary(filter(Melanoma, sex == "Female"))
+```
+
+It can equivalently be written using the pipe operator like so: 
+```{r}
+Melanoma %>% 
+  filter(sex == "Female") %>%
+  summary()
+```
+
+We pipe the output of one function to the input of another one - so instead of writing `filter(Melanoma, sex == "Female")`, `dplyr` is passing the argument ‘Melanoma’ into the filter function. The data is then filtered based on the specifed logical operator, and that subset of the data is passed into the summary command. Piping is especially useful when there is a long chain of function calls in one step.
+
+\pagebreak
+
+`dplyr` makes it easy to chain many of its verbs with the pipe operator to output or operate on only specific subsets of the data, which in many cases can be incredibly useful. Consider the following table:
+```{r}
+Melanoma %>% 
+  group_by(sex) %>% 
+  summarise (n = n(), age = mean(age), thickness = mean(thickness), died = mean(died)) %>%      
+  arrange(desc(n))
+```
+
+First, we take the dataset of Melanoma and use `group_by` to arrange the data into categorical groupings, meaning that all future operations will be applied to both groups at the same time. Using `summarise`, we can collapse the whole dataset into a table of specified summary statistics, in this case the mean age, mean tumor thickness, and percentage that died for each gender. The `n()` function (usable only inside `summarise`, `mutate`, and `filter`) counts the number of observations in the current group or groups. Finally, we sort the table in descending order based on the number of observations using the `arrange` function.   
+
+**Exercise 3.** Create a table like the one above, but instead group by `ulcer`, and include only those above the age of 65. Comment briefly on what the results of the table implies about the survival of melanoma patients. *5 pts*
+
+**Exercise 4.** Using `dplyr`, create a subset of the data called Melanoma2 that only includes `sex`, `age`, `thickness`, `ulcer`, and `died`. Fit a GLM to this new set of data using all of the variables to predict `died`. In a few sentences, interpret the coefficients of this model. Are there certain variables that could be removed from the model without much effect? *5 pts*
+
