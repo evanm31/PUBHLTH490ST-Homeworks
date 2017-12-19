@@ -1,0 +1,20 @@
+---
+title: "Challenge 4 Answer Key"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = F)
+```
+
+**1. Tell a story using a dataset of your choice.** *(20 points)*
+
+*10 Points*: One table, plot, or model created for chosen dataset.   
+*10 Point*: Included element and story are adequately explained. 
+
+**2. Extra Credit - create additional elements that expand on your story.** *(<=10 points)*
+
+*5 Points*: At least one additional element was created.  
+*5 Points*: Grader's choice - extra points should be awarded for effort/creativity! 
+
+*If warnings or messages are included in the RMarkdown output or the submission is longer than one page, deduct one point from the final score.*
